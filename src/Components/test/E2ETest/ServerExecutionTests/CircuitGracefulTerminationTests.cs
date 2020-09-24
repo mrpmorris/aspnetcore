@@ -91,6 +91,18 @@ namespace Microsoft.AspNetCore.Components.E2ETest.ServerExecutionTests
             Assert.Contains((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
         }
 
+        [Fact]
+        public async Task NavigatingToProtocolLink_DoesNotGracefullyDisconnects_TheCurrentCircuit()
+        {
+            // Arrange & Act
+            Browser.Navigate().GoToUrl("mailto:test@example.com");
+            await Task.WhenAny(Task.Delay(10000), GracefulDisconnectCompletionSource.Task);
+
+            // Assert
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully"), Messages);
+            Assert.DoesNotContain((Extensions.Logging.LogLevel.Debug, "CircuitDisconnectedPermanently"), Messages);
+        }
+
         private void Log(WriteContext wc)
         {
             if ((Extensions.Logging.LogLevel.Debug, "CircuitTerminatedGracefully") == (wc.LogLevel, wc.EventId.Name))
